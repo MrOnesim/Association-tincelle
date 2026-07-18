@@ -9,6 +9,9 @@ import ConditionsPage from './pages/ConditionsPage'
 import FaqPage from './pages/FaqPage'
 import DemandPage from './pages/DemandPage'
 import GalleryPage from './pages/GalleryPage'
+import MentionsLegales from './pages/MentionsLegales'
+import Confidentialite from './pages/Confidentialite'
+import NotFound from './pages/NotFound'
 
 export default function App() {
   return (
@@ -23,7 +26,9 @@ export default function App() {
         <Route path="/faq" element={<FaqPage />} />
         <Route path="/demande" element={<DemandPage />} />
         <Route path="/galerie" element={<GalleryPage />} />
-        <Route path="*" element={<Home />} />
+        <Route path="/mentions-legales" element={<MentionsLegales />} />
+        <Route path="/confidentialite" element={<Confidentialite />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   )

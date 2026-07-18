@@ -32,6 +32,12 @@ const programs = [
     title: 'Financement pour familles',
     text: 'Un financement non remboursable pour soutenir les familles : éducation, santé, logement et projets essentiels, sans aucun remboursement à charge.',
   },
+  {
+    icon: 'fa-solid fa-hand-holding-medical',
+    bg: 'bg-teal-50 text-teal-600',
+    title: 'Personnes âgéees et malades',
+    text: 'Une aide humaine et adaptée pour les personnes âgéees et les personnes malades : soutien aux frais de santé, d\'accompagnement et de confort quotidien, dans le respect et la dignité.',
+  },
 ]
 
 export default function Programs() {

@@ -4,6 +4,8 @@ const stats = [
   { value: '98%', label: 'De satisfaction' },
 ]
 
+import { Link } from 'react-router-dom'
+
 const trust = [
   { icon: 'fa-solid fa-lock', text: 'Données sécurisées' },
   { icon: 'fa-solid fa-clock', text: 'Réponse sous 48h' },
@@ -33,13 +35,13 @@ export default function Hero() {
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4">
-            <a href="#demande" className="btn-primary">
+            <Link to="/demande" className="btn-primary">
               Déposer une demande
               <i className="fa-solid fa-arrow-right"></i>
-            </a>
-            <a href="#apropos" className="btn-outline">
+            </Link>
+            <Link to="/apropos" className="btn-outline">
               Nous découvrir
-            </a>
+            </Link>
           </div>
 
           <div className="mt-10 flex flex-wrap gap-x-8 gap-y-4">
