@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { getBotReply, quickQuestions } from '../data/faqBot'
+import Spark from './Spark'
+import Logo from './Logo'
 
 export default function ChatBot() {
   const [open, setOpen] = useState(false)
@@ -31,72 +33,82 @@ export default function ChatBot() {
     <>
       <button
         onClick={() => setOpen(!open)}
-        aria-label="Ouvrir le chat"
-        className="fixed bottom-4 left-4 md:bottom-6 md:left-6 z-50 w-14 h-14 rounded-full bg-primary text-white shadow-lg hover:scale-110 transition flex items-center justify-center text-2xl"
+        aria-label={open ? "Fermer l'assistant" : "Ouvrir l'assistant"}
+        className="fixed bottom-5 left-5 z-50 grid h-14 w-14 place-items-center rounded-full bg-ink text-gold-300 shadow-ink-card ring-1 ring-white/15 transition hover:-translate-y-0.5 hover:scale-105 md:bottom-7 md:left-7"
       >
-        <i className={`fa-solid ${open ? 'fa-xmark' : 'fa-comment-dots'}`}></i>
+        {open ? (
+          <i className="fa-solid fa-xmark text-xl" />
+        ) : (
+          <>
+            <i className="fa-solid fa-comment-dots text-2xl" />
+            <Spark className="absolute -right-1 -top-1 h-3.5 w-3.5 text-gold-400 animate-twinkle" />
+          </>
+        )}
       </button>
 
-      {open && (
-        <div className="fixed bottom-20 left-4 md:bottom-24 md:left-6 z-50 w-[calc(100vw-2rem)] max-w-sm h-[28rem] bg-white rounded-3xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden">
-          <div className="bg-primary text-white px-5 py-4 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center">
-              <i className="fa-solid fa-robot"></i>
-            </div>
-            <div>
-              <p className="font-semibold leading-tight">Assistant Étincelle</p>
-              <p className="text-[11px] text-white/80">Répond en quelques secondes</p>
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-slate-50">
-            {messages.map((m, i) => (
-              <div key={i} className={`flex ${m.from === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div
-                  className={`max-w-[80%] px-4 py-2.5 text-sm rounded-2xl leading-relaxed ${
-                    m.from === 'user'
-                      ? 'bg-primary text-white rounded-br-sm'
-                      : 'bg-white text-slate-700 border border-slate-100 rounded-bl-sm'
-                  }`}
-                >
-                  {m.text}
-                </div>
-              </div>
-            ))}
-            <div ref={endRef} />
-          </div>
-
-          <div className="px-3 py-2 border-t border-slate-100 flex flex-wrap gap-1.5 bg-white">
-            {quickQuestions.map((q) => (
-              <button
-                key={q}
-                onClick={() => send(q)}
-                className="text-[11px] px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-primary hover:text-white transition"
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              send(input)
-            }}
-            className="p-3 border-t border-slate-100 flex items-center gap-2 bg-white"
-          >
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Écrivez votre message..."
-              className="flex-1 px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            <button type="submit" className="btn-primary !px-4 !py-2.5" aria-label="Envoyer">
-              <i className="fa-solid fa-paper-plane"></i>
-            </button>
-          </form>
+      <div
+        className={`fixed bottom-24 left-5 z-50 flex w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-3xl border border-ink/10 bg-white shadow-ink-card transition-all duration-500 md:bottom-28 md:left-7 ${
+          open ? 'pointer-events-auto translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0'
+        }`}
+        style={{ height: '28rem' }}
+        aria-hidden={!open}
+      >
+        <div className="grain relative flex items-center gap-3 bg-ink-grad px-5 py-4 text-porcelain">
+          <Logo onDark className="h-8 w-auto" tileClass="rounded-full bg-porcelain p-1.5" />
+          <span>
+            <span className="block font-display font-semibold leading-tight">Assistant Étincelle</span>
+            <span className="block text-[11px] text-porcelain/60">Répond en quelques secondes</span>
+          </span>
+          <Spark className="ml-auto h-4 w-4 text-gold-300/70 animate-twinkle" />
         </div>
-      )}
+
+        <div className="flex-1 space-y-3 overflow-y-auto bg-porcelain px-4 py-4">
+          {messages.map((m, i) => (
+            <div key={i} className={`flex ${m.from === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div
+                className={`max-w-[82%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-soft ${
+                  m.from === 'user'
+                    ? 'rounded-br-sm bg-brand-grad text-white'
+                    : 'rounded-bl-sm border border-ink/8 bg-white text-ink/85'
+                }`}
+              >
+                {m.text}
+              </div>
+            </div>
+          ))}
+          <div ref={endRef} />
+        </div>
+
+        <div className="flex flex-wrap gap-1.5 border-t border-ink/8 bg-white px-3 py-2">
+          {quickQuestions.map((q) => (
+            <button
+              key={q}
+              onClick={() => send(q)}
+              className="rounded-full bg-ivory px-2.5 py-1 text-[11px] font-semibold text-ink/70 transition hover:bg-wine-600 hover:text-white"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            send(input)
+          }}
+          className="flex items-center gap-2 border-t border-ink/8 bg-white p-3"
+        >
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Écrivez votre message..."
+            className="flex-1 rounded-xl border border-ink/12 px-4 py-2.5 text-sm focus:border-wine-600 focus:outline-none focus:ring-2 focus:ring-wine-600/20"
+          />
+          <button type="submit" className="btn-primary !px-4 !py-2.5" aria-label="Envoyer">
+            <i className="fa-solid fa-paper-plane" />
+          </button>
+        </form>
+      </div>
     </>
   )
 }
