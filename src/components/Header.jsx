@@ -39,10 +39,21 @@ export default function Header() {
         }`}
       >
         <div className="container-x flex h-9 items-center justify-between text-xs">
-          <a href={`mailto:${contact.email}`} className="flex items-center gap-2 transition hover:text-gold-300">
-            <i className="fa-solid fa-envelope" />
-            {contact.email}
-          </a>
+          <div className="flex items-center gap-6">
+            <a href={`mailto:${contact.email}`} className="flex items-center gap-2 transition hover:text-gold-300">
+              <i className="fa-solid fa-envelope" />
+              {contact.email}
+            </a>
+            <a
+              href={contact.mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden items-center gap-2 transition hover:text-gold-300 lg:flex"
+            >
+              <i className="fa-solid fa-location-dot" />
+              {contact.address.city}
+            </a>
+          </div>
           <div className="flex items-center gap-4">
             {contact.socials.map((s) => (
               <a key={s.icon} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.name} className="transition hover:text-gold-300">

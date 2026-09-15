@@ -7,6 +7,7 @@ import Stats from '../components/Stats'
 import Testimonials from '../components/Testimonials'
 import Partners from '../components/Partners'
 import Gallery from '../components/Gallery'
+import Location from '../components/Location'
 import CtaBanner from '../components/CtaBanner'
 import Reveal from '../components/Reveal'
 
@@ -22,6 +23,7 @@ export default function Home() {
       <Reveal><Testimonials /></Reveal>
       <Reveal><Partners /></Reveal>
       <Reveal><Gallery /></Reveal>
+      <Reveal><Location /></Reveal>
       <Reveal><CtaBanner /></Reveal>
     </>
   )

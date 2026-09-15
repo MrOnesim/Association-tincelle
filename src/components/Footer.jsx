@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { contact } from '../data/contact'
+import { contact, addressLine } from '../data/contact'
 import Spark from './Spark'
 import Logo from './Logo'
 
@@ -61,6 +61,15 @@ export default function Footer() {
             >
               <i className="fa-solid fa-envelope" />
               {contact.email}
+            </a>
+            <a
+              href={contact.mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 flex items-start gap-2.5 text-sm text-porcelain/60 transition hover:text-gold-300"
+            >
+              <i className="fa-solid fa-location-dot mt-1" />
+              {addressLine()}
             </a>
           </div>
 

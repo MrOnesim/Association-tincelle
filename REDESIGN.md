@@ -66,3 +66,15 @@ La vraie photo d'équipe (réunion, signalétique à l'écran) est intégrée vi
 - Composant `SmartImage.jsx` : si le fichier est absent, un visuel de repli local
   s'affiche (aucune image cassée) ; dès que `equipe.jpeg` est déposé, la vraie photo
   apparaît automatiquement, sans modification de code.
+
+## 7. Localisation (`Location.jsx`)
+
+Fiche Google Maps officielle intégrée : **Association Étincelle — 2D Av. des Étangs,
+78170 La Celle-Saint-Cloud, France** (plus code R4WJ+5M, tél. +33 6 72 03 96 14).
+
+- Section « Nous trouver » : coordonnées (adresse, téléphone, e-mail, horaires, plus code)
+  + carte intégrée sans clé API (`output=embed`) + boutons « Ouvrir dans Google Maps »
+  et « Itinéraire ».
+- Données centralisées dans `src/data/contact.js` (`mapsUrl`, `mapsDirections`, `mapsEmbed`).
+- Adresse également reprise dans le bandeau contact (en-tête) et le pied de page.
+- Visible sur : Accueil, page Demande (et adresse partout via en-tête/pied de page).
