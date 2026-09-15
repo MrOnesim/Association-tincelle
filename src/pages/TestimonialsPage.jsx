@@ -1,5 +1,6 @@
 import PageHeader from '../components/PageHeader'
 import Testimonials from '../components/Testimonials'
+import CommunityBand from '../components/CommunityBand'
 import CtaBanner from '../components/CtaBanner'
 import Reveal from '../components/Reveal'
 
@@ -12,6 +13,7 @@ export default function TestimonialsPage() {
         description="Des parcours accompagnés, des projets concrétisés : ils nous racontent leur expérience."
       />
       <Reveal><Testimonials /></Reveal>
+      <Reveal><CommunityBand /></Reveal>
       <Reveal><CtaBanner /></Reveal>
     </>
   )

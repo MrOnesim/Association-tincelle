@@ -1,4 +1,6 @@
 import SectionHeading from './SectionHeading'
+import Reveal from './Reveal'
+import Spark from './Spark'
 
 const services = [
   { icon: 'fa-solid fa-lightbulb', title: 'Financement Projet', text: 'Développez vos ambitions grâce à un soutien financier adapté.' },
@@ -9,53 +11,58 @@ const services = [
 
 export default function About() {
   return (
-    <section id="apropos" className="py-24 bg-slate-50">
-      <div className="container-x grid lg:grid-cols-2 gap-14 items-center">
-        <div className="relative">
-          <img
-            src="/assets/beneficiaire IA.png"
-            alt="Bénéficiaires Association Étincelle"
-            className="rounded-3xl shadow-xl w-full h-[420px] object-cover"
-          />
-          <img
-            src="/assets/couple.png"
-            alt="Un couple accompagné par l'association"
-            className="absolute -bottom-6 -right-3 sm:-right-8 w-36 h-36 sm:w-44 sm:h-44 object-cover rounded-2xl shadow-lg border-4 border-white"
-          />
-          <div className="absolute -top-5 -left-5 bg-white rounded-2xl shadow-lg p-5 hidden sm:block">
-            <p className="text-3xl font-extrabold text-primary">+15</p>
-            <p className="text-sm text-slate-500">pays accompagnés</p>
+    <section id="apropos" className="relative overflow-hidden py-24 sm:py-28">
+      <div className="pointer-events-none absolute -top-24 -left-24 h-80 w-80 rounded-full bg-wine-200/40 blur-3xl" />
+      <div className="container-x grid items-center gap-14 lg:grid-cols-2 lg:gap-16">
+        {/* Collage visuel */}
+        <Reveal variant="left" className="relative">
+          <div className="frame relative aspect-[4/3.4] shadow-lift">
+            <img src="/assets/opt/beneficiaire-ia.webp" alt="Bénéficiaires de l'Association Étincelle" loading="lazy" decoding="async" />
           </div>
-        </div>
+          <div className="frame absolute -bottom-8 -right-2 aspect-square w-36 border-4 border-porcelain shadow-lift sm:-right-6 sm:w-44">
+            <img src="/assets/opt/couple.webp" alt="Un couple accompagné par l'association" loading="lazy" decoding="async" />
+          </div>
+          <div className="absolute -top-6 -left-3 rounded-2xl border border-ink/5 bg-white p-5 shadow-lift sm:-left-6">
+            <p className="font-display text-3xl font-semibold text-wine-600">+15</p>
+            <p className="text-sm font-semibold text-muted">pays accompagnés</p>
+          </div>
+        </Reveal>
 
+        {/* Texte + services */}
         <div>
-          <span className="eyebrow">À propos</span>
-          <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-slate-900 leading-tight">
-            Une association au service de votre autonomie
-          </h2>
+          <Reveal variant="right">
+            <SectionHeading
+              center={false}
+              eyebrow="À propos"
+              title={
+                <>
+                  Au service de votre <span className="text-wine-600">autonomie</span>
+                </>
+              }
+              description="L'Association Étincelle accompagne particuliers, entrepreneurs, étudiants et porteurs de projets grâce à des solutions financières accessibles, transparentes et adaptées. Notre mission : favoriser l'autonomie, l'inclusion sociale et le développement durable."
+            />
+          </Reveal>
 
-          <p className="mt-6 text-slate-600 leading-relaxed">
-            L'Association Étincelle accompagne les particuliers, entrepreneurs, étudiants et porteurs
-            de projets grâce à des solutions financières accessibles, transparentes et adaptées à
-            leurs besoins.
-          </p>
-
-          <p className="mt-4 text-slate-600 leading-relaxed">
-            Notre mission est de favoriser l'autonomie, l'inclusion sociale et le développement
-            durable en proposant un accompagnement personnalisé à chaque étape de votre parcours.
-          </p>
-
-          <div className="grid sm:grid-cols-2 gap-5 mt-10">
-            {services.map((s) => (
-              <div key={s.title} className="card p-6">
-                <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-lg mb-3">
-                  <i className={s.icon}></i>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2">
+            {services.map((s, i) => (
+              <Reveal key={s.title} delay={i * 90} variant="up">
+                <div className="card group h-full p-6">
+                  <span className="grid h-11 w-11 place-items-center rounded-xl bg-wine-100 text-wine-600 transition-all duration-500 group-hover:bg-brand-grad group-hover:text-white">
+                    <i className={s.icon} />
+                  </span>
+                  <h3 className="mt-4 flex items-center gap-2 font-display text-lg font-semibold text-ink">
+                    {s.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{s.text}</p>
                 </div>
-                <h3 className="font-bold text-slate-900">{s.title}</h3>
-                <p className="text-slate-600 mt-1.5 text-sm leading-relaxed">{s.text}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
+
+          <Reveal delay={200} variant="up" className="mt-8 flex items-center gap-3 text-sm font-semibold text-muted">
+            <Spark className="h-4 w-4 text-gold-500" />
+            Transparence · Confiance · Solidarité
+          </Reveal>
         </div>
       </div>
     </section>

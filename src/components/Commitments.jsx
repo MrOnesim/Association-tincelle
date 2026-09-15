@@ -4,49 +4,56 @@ import Reveal from './Reveal'
 const commitments = [
   { icon: 'fa-solid fa-shield-halved', title: 'Confidentialité', text: 'Vos données sont protégées et jamais cédées à des tiers sans votre accord.' },
   { icon: 'fa-solid fa-scale-balanced', title: 'Transparence', text: 'Des décisions claires, une gestion saine et un suivi ouvert de chaque dossier.' },
-  { icon: 'fa-solid fa-users', title: 'Proximité', text: 'Un accompagnement humain, à l\'écoute, où que vous soyez.' },
+  { icon: 'fa-solid fa-users', title: 'Proximité', text: "Un accompagnement humain, à l'écoute, où que vous soyez." },
   { icon: 'fa-solid fa-bolt', title: 'Réactivité', text: 'Un traitement rapide de votre demande, avec un retour sous 48 heures.' },
 ]
 
 export default function Commitments() {
   return (
-    <section className="py-20 bg-white">
-      <div className="container-x grid lg:grid-cols-2 gap-14 items-center">
-        <div className="relative">
-          <img
-            src="/assets/entretien.png"
-            alt="Entretien d'accompagnement avec un bénéficiaire"
-            className="rounded-3xl shadow-xl w-full h-[460px] object-cover"
-          />
-          <div className="absolute -bottom-6 -left-6 bg-white p-6 rounded-2xl shadow-xl hidden md:block">
-            <p className="text-primary font-bold text-3xl">100%</p>
-            <p className="text-slate-600">Étude personnalisée</p>
+    <section className="relative overflow-hidden bg-ivory py-24 sm:py-28">
+      <div className="pointer-events-none absolute -top-24 right-0 h-80 w-80 rounded-full bg-wine-200/40 blur-3xl" />
+      <div className="container-x grid items-center gap-14 lg:grid-cols-2 lg:gap-16">
+        {/* Visuel */}
+        <Reveal variant="left" className="relative order-2 lg:order-1">
+          <div className="pointer-events-none absolute -top-5 -left-5 h-full w-full rounded-frame border-2 border-wine-600/20" />
+          <div className="frame relative aspect-[4/3] shadow-lift">
+            <img src="/assets/opt/entretien.webp" alt="Entretien d'accompagnement avec un bénéficiaire" loading="lazy" decoding="async" />
           </div>
-        </div>
+          <div className="absolute -bottom-7 -right-2 rounded-2xl border border-ink/5 bg-white p-5 shadow-lift sm:right-6">
+            <p className="font-display text-3xl font-semibold text-wine-600">100%</p>
+            <p className="text-sm font-semibold text-muted">Étude personnalisée</p>
+          </div>
+        </Reveal>
 
-        <div>
-          <span className="eyebrow">Pourquoi nous faire confiance</span>
-          <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-slate-900 leading-tight">
-            Une organisation sérieuse, à vos côtés
-          </h2>
-          <p className="mt-4 text-slate-600 leading-relaxed">
-            Notre rigueur et notre éthique guident chacune de nos actions auprès des bénéficiaires.
-          </p>
+        {/* Texte + engagements */}
+        <div className="order-1 lg:order-2">
+          <Reveal variant="right">
+            <SectionHeading
+              center={false}
+              eyebrow="Pourquoi nous faire confiance"
+              title={
+                <>
+                  Une organisation <span className="text-wine-600">sérieuse</span>, à vos côtés
+                </>
+              }
+              description="Notre rigueur et notre éthique guident chacune de nos actions auprès des bénéficiaires."
+            />
+          </Reveal>
 
-          <div className="grid sm:grid-cols-2 gap-5 mt-8">
+          <div className="mt-10 grid gap-5 sm:grid-cols-2">
             {commitments.map((c, i) => (
-              <Reveal key={c.title} delay={i * 100}>
-                <div
-                  className="flex items-start gap-4 p-5 rounded-2xl border border-slate-100 hover:border-primary/30 hover:shadow-md transition h-full"
-                >
-                <div className="w-11 h-11 shrink-0 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-lg">
-                  <i className={c.icon}></i>
+              <Reveal key={c.title} delay={i * 90} variant="up">
+                <div className="group flex h-full items-start gap-4 rounded-2xl border border-ink/8 bg-white p-5 shadow-soft transition-all duration-500 hover:-translate-y-1 hover:border-wine-600/25 hover:shadow-lift">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-grad text-white shadow-soft transition-transform duration-500 group-hover:rotate-6">
+                    <i className={c.icon} />
+                  </span>
+                  <span>
+                    <span className="flex items-center gap-2 font-display text-lg font-semibold text-ink">
+                      {c.title}
+                    </span>
+                    <span className="mt-1.5 block text-sm leading-relaxed text-muted">{c.text}</span>
+                  </span>
                 </div>
-                <div>
-                  <h3 className="font-bold text-slate-900">{c.title}</h3>
-                  <p className="text-sm text-slate-600 mt-1 leading-relaxed">{c.text}</p>
-                </div>
-              </div>
               </Reveal>
             ))}
           </div>

@@ -1,5 +1,6 @@
 import PageHeader from '../components/PageHeader'
 import About from '../components/About'
+import Team from '../components/Team'
 import Commitments from '../components/Commitments'
 import Stats from '../components/Stats'
 import CtaBanner from '../components/CtaBanner'
@@ -14,6 +15,7 @@ export default function AboutPage() {
         description="Découvrez qui nous sommes, nos valeurs et notre engagement auprès des bénéficiaires."
       />
       <Reveal><About /></Reveal>
+      <Reveal><Team /></Reveal>
       <Reveal><Commitments /></Reveal>
       <Reveal><Stats /></Reveal>
       <Reveal><CtaBanner /></Reveal>

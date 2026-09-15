@@ -2,142 +2,238 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  font-family: 'Poppins', sans-serif;
-  color: #0f172a;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
-::selection {
-  background: #b54772;
-  color: #fff;
-}
-
-section[id] {
-  scroll-margin-top: 120px;
-}
-
-/* Animations au scroll */
-.reveal {
-  opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
-}
-
-.reveal.is-visible {
-  opacity: 1;
-  transform: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
+@layer base {
+  :root {
+    color-scheme: light;
   }
-}
 
-/* Entrée du hero */
-@keyframes heroIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
-  to {
-    opacity: 1;
-    transform: none;
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
   }
-}
 
-.animate-hero {
-  animation: heroIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
+  body {
+    @apply bg-porcelain font-sans text-body antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
 
-.gradient-text {
-  background: linear-gradient(90deg, #b54772, #f2b04c);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  ::selection {
+    background: #a63263;
+    color: #fff;
+  }
+
+  section[id] {
+    scroll-margin-top: 120px;
+  }
+
+  :focus-visible {
+    outline: 2px solid #a63263;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* Barre de défilement discrète */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f3ede3;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #d9c9b6;
+    border-radius: 999px;
+    border: 2px solid #f3ede3;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #b54772;
+  }
 }
 
 @layer components {
   .container-x {
-    @apply max-w-7xl mx-auto px-6;
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8;
   }
 
+  /* Surtitre : petite étincelle + libellé espacé */
   .eyebrow {
-    @apply text-primary font-semibold tracking-[0.2em] uppercase text-xs sm:text-sm;
+    @apply inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest2 text-wine-600 sm:text-xs;
+  }
+  .eyebrow-light {
+    @apply inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest2 text-gold-300 sm:text-xs;
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold shadow-sm
-      hover:bg-[#9c3a61] hover:shadow-md hover:-translate-y-0.5 transition;
+    @apply relative inline-flex items-center justify-center gap-2.5 overflow-hidden rounded-full bg-brand-grad px-7 py-3.5 text-sm font-bold text-white shadow-lift transition-all duration-300 hover:-translate-y-0.5 hover:shadow-glow focus-visible:outline-wine-600;
+  }
+  .btn-primary i {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-primary:hover i {
+    transform: translateX(4px);
+  }
+  .btn-primary::after {
+    content: '';
+    @apply pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700;
+  }
+  .btn-primary:hover::after {
+    @apply translate-x-full;
+  }
+
+  .btn-ink {
+    @apply inline-flex items-center justify-center gap-2.5 rounded-full bg-ink px-7 py-3.5 text-sm font-bold text-porcelain shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:bg-ink-soft;
   }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 border border-slate-300 text-slate-700 px-6 py-3 rounded-xl font-semibold
-      hover:border-primary hover:text-primary transition;
+    @apply inline-flex items-center justify-center gap-2.5 rounded-full border border-ink/15 bg-white/60 px-7 py-3.5 text-sm font-bold text-ink backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-wine-600/50 hover:text-wine-600;
   }
 
   .card {
-    @apply bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-lg hover:border-primary/30 transition;
+    @apply relative rounded-card border border-ink/8 bg-white shadow-soft transition-all duration-500 hover:-translate-y-1.5 hover:border-wine-600/25 hover:shadow-lift;
+  }
+
+  /* Cadre photo signature : anneau interne + coins adoucis */
+  .frame {
+    @apply relative overflow-hidden rounded-frame ring-1 ring-ink/10;
+  }
+  .frame > img {
+    @apply h-full w-full object-cover;
+  }
+
+  .grain::before {
+    content: '';
+    @apply pointer-events-none absolute inset-0 opacity-[0.16] mix-blend-overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .headline {
+    @apply font-display font-semibold leading-[1.05] tracking-[-0.02em] text-ink;
+  }
+
+  .underline-spark {
+    @apply relative inline-block;
+  }
+  .underline-spark::after {
+    content: '';
+    @apply absolute -bottom-1 left-0 h-[0.32em] w-full rounded-full bg-brand-grad opacity-90;
+    background-size: 200% 100%;
+    animation: shimmer 6s linear infinite;
   }
 }
 
-/* Galerie défilante */
-.slider {
-  width: 100%;
-  overflow: hidden;
-  position: relative;
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
-  mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+/* ---------- Apparitions au scroll (variantes) ---------- */
+.reveal {
+  opacity: 0;
+  transition:
+    opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform, filter;
+}
+.reveal-up {
+  transform: translateY(34px);
+}
+.reveal-left {
+  transform: translateX(-40px);
+}
+.reveal-right {
+  transform: translateX(40px);
+}
+.reveal-scale {
+  transform: scale(0.94);
+  filter: blur(6px);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
 }
 
-.slide-track {
-  display: flex;
-  width: calc(350px * 6);
-  animation: scroll 25s linear infinite;
-}
-
-.slide {
-  width: 320px;
-  height: 220px;
-  object-fit: cover;
-  margin-right: 25px;
-  border-radius: 24px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
-  flex-shrink: 0;
-}
-
-.slide-track:hover {
-  animation-play-state: paused;
-}
-
-@keyframes scroll {
+/* ---------- Keyframes utilisées en CSS pur ---------- */
+@keyframes marquee {
   0% {
     transform: translateX(0);
   }
   100% {
-    transform: translateX(calc(-345px * 3));
+    transform: translateX(-50%);
+  }
+}
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
   }
 }
 
+/* ---------- Marquee galerie ---------- */
+.slider {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent);
+}
+.slide-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 46s linear infinite;
+}
+.slide-track:hover {
+  animation-play-state: paused;
+}
+.slide {
+  width: 340px;
+  height: 240px;
+  object-fit: cover;
+  margin-right: 22px;
+  border-radius: 1.5rem;
+  box-shadow: 0 14px 34px -14px rgba(23, 17, 25, 0.35);
+  flex-shrink: 0;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.slide:hover {
+  transform: scale(1.03) rotate(-0.5deg);
+}
 @media (max-width: 768px) {
   .slide {
     width: 260px;
-    height: 180px;
+    height: 190px;
+  }
+}
+
+/* ---------- Accessibilité : mouvement réduit ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal,
+  .reveal-up,
+  .reveal-left,
+  .reveal-right,
+  .reveal-scale {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+  .animate-twinkle,
+  .animate-floaty,
+  .animate-kenburns,
+  .animate-marquee,
+  .animate-shimmer,
+  .animate-rise,
+  .slide-track,
+  .underline-spark::after {
+    animation: none !important;
   }
 }
