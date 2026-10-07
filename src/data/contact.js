@@ -6,7 +6,7 @@ export const contact = {
   // Optionnel : endpoint d'un service type Formspree / Airtable / API Node.
   // Si renseigné, la demande est aussi envoyée côté serveur (stockage sécurisé).
   formEndpoint: '',
-  siteUrl: 'https://www.association-etincelle.org',
+  siteUrl: 'https://association-tincelle.vercel.app',
   // Localisation (fiche Google Maps officielle)
   address: {
     name: 'Association Étincelle',
