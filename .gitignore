@@ -1,5 +1,6 @@
 node_modules
 dist
+.prerender-shell
 .DS_Store
 *.log
 build_error.txt

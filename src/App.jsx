@@ -11,6 +11,9 @@ import DemandPage from './pages/DemandPage'
 import GalleryPage from './pages/GalleryPage'
 import MentionsLegales from './pages/MentionsLegales'
 import Confidentialite from './pages/Confidentialite'
+import BlogPage from './pages/BlogPage'
+import BlogPostPage from './pages/BlogPostPage'
+import AdminPage from './pages/AdminPage'
 import NotFound from './pages/NotFound'
 
 export default function App() {
@@ -26,6 +29,9 @@ export default function App() {
         <Route path="/faq" element={<FaqPage />} />
         <Route path="/demande" element={<DemandPage />} />
         <Route path="/galerie" element={<GalleryPage />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/:slug" element={<BlogPostPage />} />
+        <Route path="/admin" element={<AdminPage />} />
         <Route path="/mentions-legales" element={<MentionsLegales />} />
         <Route path="/confidentialite" element={<Confidentialite />} />
         <Route path="*" element={<NotFound />} />

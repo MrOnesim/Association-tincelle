@@ -1,9 +1,16 @@
 import { Link } from 'react-router-dom'
+import Seo from '../components/Seo'
 import Spark from '../components/Spark'
 
 export default function NotFound() {
   return (
-    <section className="grain relative flex min-h-[70vh] items-center overflow-hidden bg-ink-grad py-32 text-porcelain">
+    <>
+      <Seo
+        title="Page introuvable | Association Étincelle"
+        description="Cette page n'existe pas ou a été déplacée."
+        noindex
+      />
+      <section className="grain relative flex min-h-[70vh] items-center overflow-hidden bg-ink-grad py-32 text-porcelain">
       <div className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-wine-600/25 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-gold-500/15 blur-3xl" />
       <Spark className="pointer-events-none absolute left-[16%] top-1/4 h-6 w-6 text-gold-300/60 animate-twinkle" />
@@ -21,5 +28,6 @@ export default function NotFound() {
         </Link>
       </div>
     </section>
+    </>
   )
 }

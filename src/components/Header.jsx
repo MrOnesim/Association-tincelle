@@ -9,6 +9,7 @@ const links = [
   { label: 'À propos', to: '/apropos' },
   { label: 'Témoignages', to: '/temoignages' },
   { label: 'Partenaires', to: '/partenaires' },
+  { label: 'Blog', to: '/blog' },
   { label: 'FAQ', to: '/faq' },
 ]
 

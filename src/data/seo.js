@@ -98,6 +98,13 @@ export const seoByPath = {
     breadcrumbs: ['Conditions'],
     priority: 4,
   },
+  '/blog': {
+    title: `Blog et guides pratiques | ${BRAND}`,
+    description:
+      "Articles et guides de l'Association Étincelle : démarches, dispositifs d'aide financière et accompagnement des bénéficiaires.",
+    breadcrumbs: ['Blog'],
+    priority: 4,
+  },
   '/mentions-legales': {
     title: `Mentions légales | ${BRAND}`,
     description:
@@ -127,7 +134,26 @@ export const normalizePath = (pathname) => {
   return pathname.replace(/\/+$/, '') || '/'
 }
 
-export const getSeo = (pathname) => seoByPath[normalizePath(pathname)] || notFoundSeo
+/**
+ * Neutralise l'indexation d'une route dont le contenu est injecté par
+ * props (article de blog). Sans cela, getSeo retombe sur notFoundSeo et
+ * la page serait marquée « noindex » alors que le contenu est valide.
+ */
+export const dynamicRouteSeo = {
+  title: BRAND,
+  description: ORGANIZATION.description,
+  robots: 'index, follow',
+}
+
+export const getSeo = (pathname) => {
+  const normalized = normalizePath(pathname)
+  const known = seoByPath[normalized]
+
+  // /blog/<slug> : les métadonnées réelles viennent de l'article lui-même.
+  if (known) return known
+  if (normalized.startsWith('/blog/')) return dynamicRouteSeo
+  return notFoundSeo
+}
 
 export const absoluteUrl = (pathname) => `${SITE_URL}${normalizePath(pathname)}`
 
