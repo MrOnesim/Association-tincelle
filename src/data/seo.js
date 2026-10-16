@@ -18,7 +18,7 @@ export const ORGANIZATION = {
   description:
     "Association à but non lucratif : accompagnement financier transparent et humain pour étudiants, entrepreneurs et familles.",
   email: 'aideassociationetincelle@gmail.com',
-  telephone: '+33672039614',
+  telephone: '+33774165976',
   address: {
     '@type': 'PostalAddress',
     streetAddress: '2D Av. des Étangs',

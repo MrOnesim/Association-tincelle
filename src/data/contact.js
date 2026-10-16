@@ -1,8 +1,8 @@
 export const contact = {
   email: 'aideassociationetincelle@gmail.com',
-  whatsapp: 'https://wa.me/33672039614',
-  phone: '+33 6 72 03 96 14',
-  phoneHref: 'tel:+33672039614',
+  whatsapp: 'https://wa.me/33774165976',
+  phone: '+33 7 74 16 59 76',
+  phoneHref: 'tel:+33774165976',
   // Optionnel : endpoint d'un service type Formspree / Airtable / API Node.
   // Si renseigné, la demande est aussi envoyée côté serveur (stockage sécurisé).
   formEndpoint: '',
