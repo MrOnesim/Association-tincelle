@@ -36,14 +36,13 @@ const STATIC_ROUTES = [
 /**
  * Récupère les slugs d'articles publiés.
  *
- * Source prioritaire : l'API REST de Supabase, pour que le build connaisse
- * les articles réellement publiés. En son absence (variables non définies
- * ou réseau indisponible), on retombe sur les slugs des articles de
- * démonstration, ce qui évite de casser le build pour une raison externe.
+ * Source prioritaire : la base PostgreSQL du blog, interrogée en direct
+ * avec DATABASE_URL. Ce secret n'est lu qu'ici, au moment du build, et
+ * n'entre jamais dans le code du site. En son absence, on retombe sur les
+ * articles de démonstration, pour que le build ne casse pas.
  */
 async function fetchPostSlugs() {
-  const url = process.env.VITE_SUPABASE_URL
-  const key = process.env.VITE_SUPABASE_ANON_KEY
+  const connectionString = process.env.DATABASE_URL
 
   const fallback = async (reason) => {
     const { localPosts } = await import('../src/data/posts.demo.js')
@@ -55,25 +54,31 @@ async function fetchPostSlugs() {
     return slugs
   }
 
-  if (!url || !key) {
-    return fallback('VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY absents')
+  if (!connectionString) {
+    return fallback('DATABASE_URL absente')
   }
 
-  const endpoint = `${url}/rest/v1/articles?select=slug&status=eq.published`
   try {
-    const res = await fetch(endpoint, {
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-      },
+    const pg = await import('pg')
+    const pool = new pg.default.Pool({
+      connectionString,
+      max: 1,
+      connectionTimeoutMillis: 15_000,
+      ssl: connectionString.includes('sslmode=require')
+        ? { rejectUnauthorized: false }
+        : undefined,
     })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const rows = await res.json()
+
+    const { rows } = await pool.query(
+      `select slug from articles where status = 'published' order by published_at desc nulls last`,
+    )
+    await pool.end()
+
     const slugs = rows.map((r) => r.slug).filter(Boolean)
-    console.log(`[prerender] ${slugs.length} article(s) publié(s) trouvé(s) sur Supabase`)
+    console.log(`[prerender] ${slugs.length} article(s) publié(s) trouvé(s) en base`)
     return slugs
   } catch (err) {
-    return fallback(`lecture Supabase impossible (${err.message})`)
+    return fallback(`lecture de la base impossible (${err.message})`)
   }
 }
 

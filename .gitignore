@@ -1,6 +1,9 @@
 node_modules
 dist
 .prerender-shell
+.env
+.env.*
+!.env.example
 .DS_Store
 *.log
 build_error.txt

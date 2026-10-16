@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { SUPABASE_CONFIGURED } from '../data/posts'
+import { saveArticle as apiSaveArticle, deleteArticle as apiDeleteArticle, slugify } from '../data/posts'
 
 const emptyDraft = () => ({
   slug: '',
@@ -44,48 +44,27 @@ export default function AdminEditor({ initialPost, onSaved, onCancel }) {
     setMessage(null)
 
     try {
-      const { supabaseUrl } = await import('../data/supabase')
-      const session = await getAccessToken()
-
       const payload = {
-        slug: draft.slug.trim(),
+        slug: draft.slug.trim().toLowerCase(),
         title: draft.title.trim(),
         excerpt: draft.excerpt.trim(),
         body: draft.body,
-        cover_image: draft.coverImage.trim() || null,
-        cover_alt: draft.coverAlt.trim() || null,
+        coverImage: draft.coverImage.trim() || null,
+        coverAlt: draft.coverAlt.trim() || null,
         author: draft.author.trim() || 'Association Étincelle',
         category: draft.category.trim() || 'Général',
         status: draft.status,
-        published_at: draft.publishedAt || null,
-        updated_at: new Date().toISOString(),
+        publishedAt: draft.publishedAt || null,
       }
 
-      const res = await fetch(`${supabaseUrl}/rest/v1/articles`, {
-        method: 'POST',
-        headers: {
-          apikey: session.apikey,
-          Authorization: `Bearer ${session.token}`,
-          'Content-Type': 'application/json',
-          Prefer: 'return=representation',
-        },
-        body: JSON.stringify(payload),
-      })
-
-      if (!res.ok) {
-        const detail = await res.text()
-        throw new Error(`HTTP ${res.status} — ${detail.slice(0, 200)}`)
-      }
-
-      const saved = await res.json()
-      const record = Array.isArray(saved) ? saved[0] : saved
+      const result = await apiSaveArticle(payload)
+      const record = result.article
 
       setMessage({
         type: 'success',
-        text:
-          record?.slug
-            ? `Article enregistré. Il apparaîtra sur le site au prochain déploiement : /blog/${record.slug}`
-            : 'Article enregistré.',
+        text: record?.slug
+          ? `Article enregistré. Il apparaîtra sur le site au prochain déploiement : /blog/${record.slug}`
+          : 'Article enregistré.',
       })
       onSaved?.(record)
     } catch (err) {
@@ -95,6 +74,20 @@ export default function AdminEditor({ initialPost, onSaved, onCancel }) {
     }
   }
 
+  /** Remplit l'identifiant d'URL à partir du titre, tant qu'il est vide. */
+  const handleTitleChange = (event) => {
+    const title = event.target.value
+    setDraft((d) => ({
+      ...d,
+      title,
+      slug: d.slugTouched ? d.slug : slugify(title),
+    }))
+  }
+
+  const handleSlugChange = (event) => {
+    setDraft((d) => ({ ...d, slug: event.target.value, slugTouched: true }))
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid gap-5 sm:grid-cols-2">
@@ -102,7 +95,7 @@ export default function AdminEditor({ initialPost, onSaved, onCancel }) {
           <label htmlFor="a-title" className={label}>
             Titre
           </label>
-          <input id="a-title" required value={draft.title} onChange={update('title')} className={input} />
+          <input id="a-title" required value={draft.title} onChange={handleTitleChange} className={input} />
         </div>
 
         <div>
@@ -113,7 +106,7 @@ export default function AdminEditor({ initialPost, onSaved, onCancel }) {
             id="a-slug"
             required
             value={draft.slug}
-            onChange={update('slug')}
+            onChange={handleSlugChange}
             placeholder="mon-article"
             className={input}
           />
@@ -234,14 +227,4 @@ export default function AdminEditor({ initialPost, onSaved, onCancel }) {
       </div>
     </form>
   )
-}
-
-/** Récupère la clé et le jeton de session de l'utilisateur connecté. */
-async function getAccessToken() {
-  const { supabaseUrl, getClient } = await import('../data/supabase')
-  const client = await getClient()
-  if (!client) throw new Error('Client Supabase indisponible')
-  const { data } = await client.auth.getSession()
-  if (!data?.session) throw new Error('Session expirée, reconnectez-vous.')
-  return { token: data.session.access_token, apikey: supabaseUrl }
 }

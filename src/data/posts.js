@@ -1,100 +1,110 @@
 /**
- * Accès aux articles du blog.
+ * Accès aux articles, côté navigateur.
  *
- * Deux sources possibles, choisies à l'exécution :
- *  - Supabase (REST) si VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY sont
- *    définis au build, ce qui est le cas en production sur Vercel ;
- *  - sinon les données de démonstration locales, pour permettre de
- *    développer et de valider l'interface sans base configurée.
+ * Les données viennent de l'API du site elle-même (/api/posts), jamais
+ * directement de la base : aucune chaîne de connexion ni identifiant ne
+ * doit atteindre le code du navigateur.
  *
- * L'interface est identique dans les deux cas, ce qui évite de
- * conditionner les composants eux-mêmes.
+ * Tant que l'API n'est pas disponible — développement local, ou base pas
+ * encore configurée — les articles de démonstration prennent le relais.
  */
-import { localPosts } from './posts.demo'
 
-const url = import.meta.env.VITE_SUPABASE_URL
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+export const API_BASE = '/api'
 
-export const SUPABASE_CONFIGURED = Boolean(url && anonKey)
-
-/** Articles publiés uniquement : le brouillon ne doit jamais fuiter. */
-const ARTICLES_PATH = `${url}/rest/v1/articles?status=eq.published&select=*&order=published_at.desc`
-
-const headers = {
-  apikey: anonKey,
-  Authorization: `Bearer ${anonKey}`,
-}
-
-/**
- * Normalise une ligne de la base en article exploitable par l'interface.
- * Les champs absents ou mal typés ne doivent pas faire échouer l'affichage.
- */
-const normalize = (row) => ({
-  id: row.id,
-  slug: row.slug,
-  title: row.title,
-  excerpt: row.excerpt ?? '',
-  body: row.body ?? '',
-  coverImage: row.cover_image ?? null,
-  coverAlt: row.cover_alt ?? '',
-  author: row.author ?? 'Association Étincelle',
-  category: row.category ?? 'Général',
-  status: row.status ?? 'draft',
-  publishedAt: row.published_at ?? null,
-  updatedAt: row.updated_at ?? null,
-})
-
-const byDateDesc = (a, b) =>
-  new Date(b.publishedAt || 0).getTime() - new Date(a.publishedAt || 0).getTime()
-
-/** Liste des articles publiés, du plus récent au plus ancien. */
-export async function getPublishedPosts() {
-  if (!SUPABASE_CONFIGURED) return [...localPosts].sort(byDateDesc)
-
+const withTimeout = async (url, options = {}, ms = 8000) => {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), ms)
   try {
-    const res = await fetch(ARTICLES_PATH, { headers })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const rows = await res.json()
-    return rows.map(normalize)
-  } catch (err) {
-    console.error('[posts] lecture impossible, repli sur les données locales :', err.message)
-    return [...localPosts].sort(byDateDesc)
+    return await fetch(url, { ...options, signal: controller.signal })
+  } finally {
+    clearTimeout(timer)
   }
 }
 
-/** Un article publié par son slug, ou null s'il n'existe pas. */
+/** Articles publiés, du plus récent au plus ancien. */
+export async function getPublishedPosts() {
+  try {
+    const res = await withTimeout(`${API_BASE}/posts`)
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const posts = await res.json()
+    if (Array.isArray(posts) && posts.length) return posts
+    return posts
+  } catch (err) {
+    const { localPosts } = await import('./posts.demo')
+    console.warn('[posts] API indisponible, articles de démonstration :', err.message)
+    return localPosts
+  }
+}
+
+/** Un article publié par son slug, ou null. */
 export async function getPostBySlug(slug) {
   if (!slug) return null
-
-  if (!SUPABASE_CONFIGURED) {
+  try {
+    const res = await withTimeout(`${API_BASE}/posts?slug=${encodeURIComponent(slug)}`)
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const post = await res.json()
+    if (post) return post
+  } catch (err) {
+    const { localPosts } = await import('./posts.demo')
+    console.warn('[posts] API indisponible, démonstration utilisée :', err.message)
     return localPosts.find((p) => p.slug === slug) ?? null
   }
+  return null
+}
 
-  const path = `${url}/rest/v1/articles?slug=eq.${encodeURIComponent(
-    slug,
-  )}&status=eq.published&select=*&limit=1`
+/** Connexion administrateur. */
+export async function signIn(email, password) {
+  const res = await fetch(`${API_BASE}/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(data.error || 'Connexion impossible.')
+  return data
+}
 
+export async function signOut() {
+  await fetch(`${API_BASE}/logout`, { method: 'POST' })
+}
+
+/** Vérifie si une session est ouverte, sans rien exposer de sensible. */
+export async function checkSession() {
   try {
-    const res = await fetch(path, { headers })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const rows = await res.json()
-    return rows.length ? normalize(rows[0]) : null
-  } catch (err) {
-    console.error('[posts] article introuvable :', err.message)
+    const res = await withTimeout(`${API_BASE}/session`)
+    if (!res.ok) return null
+    return await res.json()
+  } catch {
     return null
   }
 }
 
-/** Slugs publiés, utilisés par le script de pré-rendu. */
-export async function getPublishedSlugs() {
-  const posts = await getPublishedPosts()
-  return posts.map((p) => p.slug).filter(Boolean)
+/** Crée ou met à jour un article. Réservé à l'administrateur connecté. */
+export async function saveArticle(article) {
+  const res = await fetch(`${API_BASE}/article`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(article),
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(data.error || 'Enregistrement impossible.')
+  return data
+}
+
+export async function deleteArticle(slug) {
+  const res = await fetch(`${API_BASE}/article`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ slug }),
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(data.error || 'Suppression impossible.')
+  return data
 }
 
 /**
- * Rend un slug lisible depuis un titre : « Mon Article Étonnant »
- * devient « mon-article-etonnant ». Les accents sont retirés pour que
- * l'URL reste stable et lisible quel que soit le navigateur.
+ * Transforme un titre en identifiant d'URL lisible :
+ * « Mon Article Étonnant » devient « mon-article-etonnant ».
  */
 export function slugify(text) {
   return String(text || '')
