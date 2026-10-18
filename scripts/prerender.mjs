@@ -192,22 +192,37 @@ function forceVisible(html) {
 }
 
 /**
- * Nettoyage final : URL absolues vers chemins relatifs, et suppression des
- * scripts de réhydratation pour que la page reste lisible sans JavaScript.
+ * Prépare la page statique.
+ *
+ * Le script d'hydratation est CONSERVÉ, et c'est délibéré.
+ *
+ * Le pré-rendu sert d'abord à Google : le HTML servi contient le texte,
+ * les titres et les métadonnées, sans qu'un moteur de recherche ait à
+ * exécuter du JavaScript. Mais le site reste une application : les
+ * réponses de FAQ, le menu mobile, le formulaire de demande et
+ * l'assistant ont besoin de JavaScript pour fonctionner.
+ *
+ * Retirer ce script rendrait la page illisible pour Google mais
+ * surtout inutilisable pour un visiteur, dont la moitié des
+ * fonctionnalités disparaîtraient. React hydrate ensuite le contenu
+ * déjà présent, qui est identique à celui qu'il aurait produit lui-même.
+ *
+ * Les URL sont rendues relatives car chaque page vit dans son propre
+ * sous-dossier : « /programmes » devient « ../../programmes » depuis
+ * /blog/mon-article/, sans quoi le lien pointerait vers un chemin
+ * inexistant en ouverture directe.
  */
 function toStaticHtml(html, route) {
   const depth = route === '/' ? 0 : route.slice(1).split('/').length
   const prefix = depth === 0 ? './' : '../'.repeat(depth)
 
   return forceVisible(
-    html
-      .replace(/<script[^>]*type="module"[^>]*><\/script>/g, '')
-      .replace(/(href|src)="\/(?!\/)([^"]*)"/g, (_, attr, rest) => {
-        // On ne touche pas aux URL absolues externes ni aux racines
-        // techniques (mailto:, tel:, #, data:).
-        if (/^[a-z]+:/i.test(rest) || rest.startsWith('#')) return `${attr}="/${rest}"`
-        return `${attr}="${prefix}${rest}"`
-      }),
+    html.replace(/(href|src)="\/(?!\/)([^"]*)"/g, (_, attr, rest) => {
+      // On ne touche pas aux URL absolues externes ni aux racines
+      // techniques (mailto:, tel:, #, data:).
+      if (/^[a-z]+:/i.test(rest) || rest.startsWith('#')) return `${attr}="/${rest}"`
+      return `${attr}="${prefix}${rest}"`
+    }),
   )
 }
 
