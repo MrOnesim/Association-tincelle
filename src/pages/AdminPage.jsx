@@ -3,11 +3,13 @@ import PageHeader from '../components/PageHeader'
 import Seo from '../components/Seo'
 import AdminLogin from '../components/AdminLogin'
 import AdminEditor from '../components/AdminEditor'
+import AdminArticleList from '../components/AdminArticleList'
 import { checkSession, signOut } from '../data/posts'
 
 export default function AdminPage() {
   const [state, setState] = useState('checking') // checking | out | in
   const [email, setEmail] = useState('')
+  const [editing, setEditing] = useState(null)
 
   useEffect(() => {
     checkSession().then((session) => {
@@ -64,7 +66,20 @@ export default function AdminPage() {
                 </button>
               </div>
 
-              <AdminEditor onSaved={() => {}} />
+              <AdminArticleList onEdit={setEditing} onChanged={() => {}} />
+
+              <div>
+                <h2 className="font-display text-xl font-semibold text-ink">
+                  {editing ? `Modifier : ${editing.title}` : 'Nouvel article'}
+                </h2>
+                <div className="mt-5">
+                  <AdminEditor
+                    initialPost={editing}
+                    onSaved={() => setEditing(null)}
+                    onCancel={() => setEditing(null)}
+                  />
+                </div>
+              </div>
             </div>
           )}
         </div>

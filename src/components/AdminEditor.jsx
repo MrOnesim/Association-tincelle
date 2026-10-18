@@ -1,8 +1,14 @@
 import { useEffect, useState } from 'react'
-import { saveArticle as apiSaveArticle, deleteArticle as apiDeleteArticle, slugify } from '../data/posts'
+import {
+  saveArticle as apiSaveArticle,
+  deleteArticle as apiDeleteArticle,
+  uploadImage,
+  slugify,
+} from '../data/posts'
 
 const emptyDraft = () => ({
   slug: '',
+  slugTouched: false,
   title: '',
   excerpt: '',
   body: '',
@@ -21,18 +27,36 @@ const label = 'mb-2 block text-sm font-semibold text-ink'
 /**
  * Éditeur d'articles.
  *
- * L'écriture passe par la REST API de Supabase avec la clé de session de
- * l'utilisateur connecté : c'est la règle RLS de la base qui autorise, et
- * non l'interface. Masquer un bouton ici n'aurait valeur que cosmétique.
+ * L'écriture passe par l'API du site, qui vérifie la session côté
+ * serveur : le navigateur n'a jamais accès à la base ni à ses
+ * identifiants. C'est la base qui autorise, pas cette interface.
  */
 export default function AdminEditor({ initialPost, onSaved, onCancel }) {
   const [draft, setDraft] = useState(emptyDraft)
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState(null)
 
   useEffect(() => {
-    if (initialPost) setDraft({ ...emptyDraft(), ...initialPost })
-    else setDraft(emptyDraft())
+    if (!initialPost) {
+      setDraft(emptyDraft())
+      return
+    }
+
+    // Un article existant garde son identifiant : le régénérer à partir du
+    // titre casserait l'adresse déjà publiée et son référencement.
+    const normalized = { ...emptyDraft(), ...initialPost, slugTouched: true }
+
+    // La base renvoie un horodatage complet, le champ de saisie attend
+    // une date seule.
+    if (normalized.publishedAt) {
+      const d = new Date(normalized.publishedAt)
+      normalized.publishedAt = Number.isNaN(d.getTime())
+        ? ''
+        : d.toISOString().slice(0, 10)
+    }
+
+    setDraft(normalized)
   }, [initialPost])
 
   const update = (field) => (event) =>
@@ -86,6 +110,32 @@ export default function AdminEditor({ initialPost, onSaved, onCancel }) {
 
   const handleSlugChange = (event) => {
     setDraft((d) => ({ ...d, slug: event.target.value, slugTouched: true }))
+  }
+
+  /** Dépose l'image choisie et renseigne automatiquement son texte alternatif. */
+  const handleFilePick = async (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = '' // permet de renvoyer deux fois le même fichier
+    if (!file) return
+
+    setUploading(true)
+    setMessage(null)
+    try {
+      const path = await uploadImage(file)
+      setDraft((d) => ({
+        ...d,
+        coverImage: path,
+        // Le nom de fichier reste une bonne description de départ, que
+        // l'auteur peut corriger : un texte alternatif doit être utile,
+        // pas un nom de fichier brut.
+        coverAlt: d.coverAlt || file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' '),
+      }))
+      setMessage({ type: 'success', text: 'Image envoyée. N’oubliez pas d’enregistrer l’article.' })
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message || 'Envoi impossible.' })
+    } finally {
+      setUploading(false)
+    }
   }
 
   return (
@@ -148,24 +198,64 @@ export default function AdminEditor({ initialPost, onSaved, onCancel }) {
           </p>
         </div>
 
-        <div>
-          <label htmlFor="a-cover" className={label}>
-            Image de couverture (chemin)
+        <div className="sm:col-span-2">
+          <label htmlFor="a-cover-file" className={label}>
+            Image de couverture
           </label>
           <input
-            id="a-cover"
-            value={draft.coverImage}
-            onChange={update('coverImage')}
-            placeholder="/assets/opt/encaisser.webp"
-            className={input}
+            id="a-cover-file"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleFilePick}
+            disabled={uploading}
+            className="w-full cursor-pointer rounded-xl border border-ink/12 bg-white px-4 py-3 text-sm text-ink file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-brand-grad file:px-5 file:py-2.5 file:text-sm file:font-bold file:text-white disabled:opacity-60"
           />
+          <p className="mt-1.5 text-xs text-muted">
+            JPEG, PNG ou WebP, 4 Mo maximum. L&apos;image sera choisie depuis votre
+            téléphone ou votre ordinateur.
+          </p>
+
+          {uploading && (
+            <p className="mt-2 text-xs font-semibold text-wine-600">Envoi en cours…</p>
+          )}
+
+          {draft.coverImage && (
+            <div className="mt-4 flex items-start gap-4">
+              <img
+                src={draft.coverImage}
+                alt=""
+                className="h-24 w-40 rounded-xl border border-ink/10 object-cover"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="break-all text-xs text-muted">{draft.coverImage}</p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setDraft((d) => ({ ...d, coverImage: '', coverAlt: '' }))
+                  }
+                  className="mt-2 text-xs font-bold text-red-600 underline-offset-4 hover:underline"
+                >
+                  Retirer l&apos;image
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
           <label htmlFor="a-cover-alt" className={label}>
             Texte alternatif de l&apos;image
           </label>
-          <input id="a-cover-alt" value={draft.coverAlt} onChange={update('coverAlt')} className={input} />
+          <input
+            id="a-cover-alt"
+            value={draft.coverAlt}
+            onChange={update('coverAlt')}
+            placeholder="Décrivez l'image pour les lecteurs d'écran"
+            className={input}
+          />
+          <p className="mt-1.5 text-xs text-muted">
+            Décrit l&apos;image pour les aveugles et les moteurs de recherche.
+          </p>
         </div>
 
         <div>

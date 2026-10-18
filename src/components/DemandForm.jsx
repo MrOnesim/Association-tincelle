@@ -133,6 +133,7 @@ export default function DemandForm() {
 
       <div className="container-x relative">
         <SectionHeading
+          as="h1"
           eyebrow="Association Étincelle"
           title={
             <>
