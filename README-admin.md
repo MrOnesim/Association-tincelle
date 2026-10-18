@@ -30,6 +30,30 @@ Rassemblez votre pièce d'identité et un justificatif de domicile.
 La demande est étudiée sous 48 heures.
 ```
 
+## Modifier ou supprimer un article
+
+La liste en haut de l'écran montre tous les articles, brouillons compris.
+
+- **Modifier** charge l'article dans le formulaire.
+- La corbeille le supprime définitivement, après confirmation.
+
+Ne changez plus l'identifiant d'URL d'un article déjà publié : son adresse
+changerait et son référencement serait perdu. L'identifiant se remplit tout
+seul à partir du titre lors de la création, et reste ensuite modifiable tant
+que l'article n'est pas publié.
+
+## Ajouter une image
+
+Le champ **Image de couverture** accepte un fichier de votre téléphone ou de
+votre ordinateur. JPEG, PNG ou WebP, 4 Mo maximum.
+
+Le texte alternatif est pré-rempli avec le nom du fichier ; corrigez-le pour
+décrire réellement l'image, c'est ce texte que lisent les aveugles et que les
+moteurs de recherche utilisent pour comprendre l'image.
+
+Le type du fichier est vérifié sur son contenu réel, pas sur son nom : renommer
+une image en `.jpg` ne la fait pas passer pour une image.
+
 ## Statut
 
 - **Brouillon** — invisible sur le site.
@@ -66,6 +90,7 @@ Trois tables, trois rôles distincts :
 | `articles` | lecture, écriture, suppression | tout |
 | `admin_users` | **lecture seule** | tout |
 | `admin_sessions` | lecture, insertion, suppression | tout |
+| `images` | lecture, insertion, mise à jour | tout |
 
 L'API peut donc gérer les articles et les sessions, mais **ne peut pas**
 changer un mot de passe ni créer un compte, même si elle était compromise.
@@ -81,6 +106,16 @@ ce qui serait bien plus grave.
 # API : authentification, sessions, brouillons invisibles
 node --env-file=.env scripts/test-handlers.mjs "mot-de-passe"
 
+# Nouvelles routes : liste, édition d'un brouillon, envoi d'image
+node --env-file=.env scripts/test-admin-new.mjs "mot-de-passe"
+
 # Permissions réellement appliquées par PostgreSQL
 node --env-file=.env scripts/test-permissions.mjs
+
+# Site déployé : lisibilité, fonctionnalités, structure SEO
+node scripts/check-interactive.mjs
+node scripts/check-seo.mjs
+
+# Écriture réelle en production, sans rien laisser derrière
+node scripts/e2e-prod.mjs https://association-tincelle.vercel.app "mot-de-passe"
 ```
