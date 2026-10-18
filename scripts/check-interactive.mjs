@@ -29,17 +29,37 @@ const visibleChars = async (url) => {
       typeof el.checkVisibility === 'function'
         ? el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })
         : true
+
+    // Contenu volontairement masqué : réponses d'accord repliées, panneau
+    // de l'assistant fermé. Leur absence n'est pas un défaut.
+    const isIntentionallyHidden = (el) => {
+      let node = el
+      while (node && node !== document.documentElement) {
+        const cls = node.className?.toString?.() || ''
+        // Panneau replié
+        if (/grid-rows-\[0fr\]/.test(cls)) return true
+        if (node.getAttribute?.('aria-expanded') === 'false') return true
+        // Panneau fermé : masqué ET non cliquable. C'est le motif
+        // d'un volet qui s'ouvre au clic, pas une animation de contenu.
+        if (/opacity-0/.test(cls) && /pointer-events-none/.test(cls)) return true
+        node = node.parentElement
+      }
+      return false
+    }
+
     const leaves = [...document.querySelectorAll('body *')].filter(
       (el) => el.textContent?.trim() && !el.children.length,
     )
     let v = 0
     let h = 0
+    let expected = 0
     for (const el of leaves) {
       const n = el.textContent.trim().length
       if (vis(el)) v += n
+      else if (isIntentionallyHidden(el)) expected += n
       else h += n
     }
-    return { v, h }
+    return { v, h, expected }
   })
   await page.close()
   return stats
@@ -48,8 +68,13 @@ const visibleChars = async (url) => {
 console.log('=== 1. Lisibilité sans JavaScript ===')
 for (const path of ['/', '/programmes', '/faq', '/blog', '/blog/comment-deposer-une-demande-aide']) {
   const s = await visibleChars(`${SITE}${path}`)
+  // Le ratio ignore le contenu replié volontairement.
   const ratio = s.v / (s.v + s.h)
-  check(path.padEnd(38), s.v > 200 && ratio > 0.8, `${s.v} visibles / ${s.h} masqués (${(ratio * 100).toFixed(0)}%)`)
+  check(
+    path.padEnd(38),
+    s.v > 200 && ratio > 0.95,
+    `${s.v} visibles / ${s.h} masqués (${(ratio * 100).toFixed(0)}%) / ${s.expected} repliés`,
+  )
 }
 
 console.log('\n=== 2. Fonctionnalités avec JavaScript ===')
