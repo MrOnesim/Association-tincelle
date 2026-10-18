@@ -273,17 +273,39 @@ await writeFile(
 console.log(`[prerender] sitemap.xml : ${FIXED_URLS.length + slugs.length} URL(s)`)
 
 /**
- * Lance Chromium. Sur un environnement qui ne fournit pas les bibliothèques
- * système attendues (Vercel, conteneurs allégés), le lancement échoue. Dans
- * ce cas on ne bloque pas le build : le site est déployé en version
- * dynamique, simplement sans le bénéfice du pré-rendu pour Google.
+ * Ouvre un navigateur pour le rendu.
+ *
+ * Deux sources possibles :
+ *  - @sparticuz/chromium, qui embarque un Chromium compilé pour les
+ *    environnements sans navigateur (machine de build Vercel) ;
+ *  - le Chromium installé par Puppeteer, en développement local.
+ *
+ * Le premier est indispensable en production : sur Vercel, Puppeteer
+ * renvoie « Could not find Chrome » car aucun navigateur n'est présent
+ * sur la machine de build.
  */
+async function launchBrowser() {
+  const args = ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+
+  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+    const chromium = (await import('@sparticuz/chromium')).default
+    const executablePath = await chromium.executablePath()
+    return puppeteer.launch({ args: [...args, ...chromium.args], executablePath, headless: true })
+  }
+
+  try {
+    return await puppeteer.launch({ args, headless: true })
+  } catch {
+    // Repli : même en local, le Chromium de sparticuz fonctionne.
+    const chromium = (await import('@sparticuz/chromium')).default
+    const executablePath = await chromium.executablePath()
+    return puppeteer.launch({ args: [...args, ...chromium.args], executablePath, headless: true })
+  }
+}
+
 let browser = null
 try {
-  browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-  })
+  browser = await launchBrowser()
 } catch (err) {
   console.warn(`[prerender] Chromium indisponible (${err.message})`)
   console.warn('[prerender] build conservé en version dynamique, pré-rendu ignoré')
