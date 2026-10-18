@@ -67,15 +67,41 @@ try {
   console.log(`GET /api/session          ERREUR ${err.message}`)
 }
 
-// 6. Pages : contenu et métadonnées
-for (const path of ['/blog', '/blog/comment-deposer-une-demande-aide', '/admin']) {
+// 6. Pages : contenu et métadonnées.
+//    Le contrôle « visible » est indispensable : un bloc peut contenir du
+//    texte tout en restant en opacity: 0, ce qui donne une page vide à l'écran.
+for (const path of [
+  '/',
+  '/programmes',
+  '/apropos',
+  '/galerie',
+  '/demande',
+  '/faq',
+  '/blog',
+  '/blog/comment-deposer-une-demande-aide',
+  '/admin',
+]) {
   try {
     const { status, text } = await get(path)
     const title = text.split('<title>')[1]?.split('</title>')[0]
     const robots = text.match(/name="robots"[^>]*content="([^"]*)"/)?.[1]
     const body = text.split('<body')[1] || ''
-    const visible = body.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
-    console.log(`${path.padEnd(38)} ${status} — robots=${robots} — ${visible.length} car. — ${title}`)
+    const visible = body
+      .replace(/<script[\s\S]*?<\/script>/g, '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+
+    // Blocs animés non activés = contenu invisible à l'écran.
+    const hidden = (text.match(/class="[^"]*\breveal\b[^"]*"/g) || []).filter(
+      (c) => !/is-visible/.test(c),
+    ).length
+
+    const flag = hidden > 0 ? '  <-- CONTENU MASQUE' : ''
+    console.log(
+      `${path.padEnd(38)} ${status} — robots=${robots} — ${String(visible.length).padStart(5)} car. — ${hidden} bloc(s) masqué(s)${flag}`,
+    )
+    console.log(`  ${' '.repeat(37)} ${title}`)
   } catch (err) {
     console.log(`${path.padEnd(38)} ERREUR ${err.message}`)
   }

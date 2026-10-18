@@ -171,26 +171,44 @@ function composeHtml(shell, rendered) {
 }
 
 /**
- * Rend les URL absolues relatives à la page courante.
+ * Rend visibles les éléments animés au défilement.
  *
- * Chaque page statique vit dans son propre sous-dossier
- * (dist/blog/mon-article/index.html), donc un lien « /programmes » doit
- * devenir « ../../programmes » pour rester correct en ouverture directe.
- * Un simple « ./programmes » depuis /blog/mon-article/ pointerait vers
- * /blog/mon-article/programmes, qui n'existe pas.
+ * Le site masque les blocs jusqu'à leur apparition à l'écran : la classe
+ * `reveal` vaut `opacity: 0`, et seul le JavaScript ajoute `is-visible`
+ * au croisement de la zone visible. En version statique, ce JavaScript est
+ * retiré : sans correction, tout le contenu sous la ligne de flottaison
+ * resterait invisible et les pages paraîtraient vides.
+ *
+ * On ajoute donc `is-visible` à chaque bloc concerned.
+ */
+function forceVisible(html) {
+  return html.replace(
+    /class="([^"]*\breveal(?:-[a-z]+)?\b[^"]*)"/g,
+    (match, classes) => {
+      if (/\bis-visible\b/.test(classes)) return match
+      return `class="${classes} is-visible"`
+    },
+  )
+}
+
+/**
+ * Nettoyage final : URL absolues vers chemins relatifs, et suppression des
+ * scripts de réhydratation pour que la page reste lisible sans JavaScript.
  */
 function toStaticHtml(html, route) {
   const depth = route === '/' ? 0 : route.slice(1).split('/').length
   const prefix = depth === 0 ? './' : '../'.repeat(depth)
 
-  return html
-    .replace(/<script[^>]*type="module"[^>]*><\/script>/g, '')
-    .replace(/(href|src)="\/(?!\/)([^"]*)"/g, (_, attr, rest) => {
-      // On ne touche pas aux URL absolues externes ni aux racines
-      // techniques (mailto:, tel:, #, data:).
-      if (/^[a-z]+:/i.test(rest) || rest.startsWith('#')) return `${attr}="/${rest}"`
-      return `${attr}="${prefix}${rest}"`
-    })
+  return forceVisible(
+    html
+      .replace(/<script[^>]*type="module"[^>]*><\/script>/g, '')
+      .replace(/(href|src)="\/(?!\/)([^"]*)"/g, (_, attr, rest) => {
+        // On ne touche pas aux URL absolues externes ni aux racines
+        // techniques (mailto:, tel:, #, data:).
+        if (/^[a-z]+:/i.test(rest) || rest.startsWith('#')) return `${attr}="/${rest}"`
+        return `${attr}="${prefix}${rest}"`
+      }),
+  )
 }
 
 const routes = [...STATIC_ROUTES]
